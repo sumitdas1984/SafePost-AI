@@ -1,0 +1,26 @@
+name: Experiment
+description: Track an ML or engineering experiment
+title: "[Experiment] "
+body:
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+  - type: textarea
+    id: result
+    attributes:
+      label: Result
+  - type: textarea
+    id: next
+    attributes:
+      label: Next Action

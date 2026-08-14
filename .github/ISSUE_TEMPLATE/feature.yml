@@ -1,0 +1,26 @@
+name: Feature
+description: Add a feature or project task
+title: "[Feature] "
+body:
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone
+      placeholder: "M1"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true

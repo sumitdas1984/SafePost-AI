@@ -1,0 +1,13 @@
+app:
+  name: safepost-ai
+  environment: local
+
+model:
+  version: transformer-v1
+  labels:
+    - hate_speech
+    - offensive_language
+    - neutral
+
+moderation:
+  hate_speech_flag_threshold: 0.80
