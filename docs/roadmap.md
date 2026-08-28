@@ -20,17 +20,16 @@ This is the repository-level execution tracker. Detailed task status should be m
 ## Milestones
 
 - [ ] M1 — Product + Dataset
-- [ ] M2 — TF-IDF Baseline
-- [ ] M3 — BiLSTM Deep Learning
-- [ ] M4 — Transformer
-- [ ] M5 — Evaluation + Model Selection
-- [ ] M6 — FastAPI
-- [ ] M7 — SageMaker
-- [ ] M8 — Streamlit
-- [ ] M9 — Docker + AWS Application
-- [ ] M10 — GitHub Actions CI/CD
-- [ ] M11 — Terraform
-- [ ] M12 — MLOps + Monitoring
+- [ ] M2 — BiLSTM Baseline (TensorFlow) — replaces the original TF-IDF baseline
+- [ ] M3 — Transformer
+- [ ] M4 — Evaluation + Model Selection
+- [ ] M5 — FastAPI
+- [ ] M6 — SageMaker
+- [ ] M7 — Streamlit
+- [ ] M8 — Docker + AWS Application
+- [ ] M9 — GitHub Actions CI/CD
+- [ ] M10 — Terraform
+- [ ] M11 — MLOps + Monitoring
 
 ## Milestone Rule
 
