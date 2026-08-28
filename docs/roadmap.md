@@ -19,8 +19,8 @@ This is the repository-level execution tracker. Detailed task status should be m
 
 ## Milestones
 
-- [ ] M1 — Product + Dataset
-- [ ] M2 — BiLSTM Baseline (TensorFlow) — replaces the original TF-IDF baseline
+- [x] M1 — Product + Dataset
+- [x] M2 — BiLSTM Baseline (TensorFlow) — replaces the original TF-IDF baseline
 - [ ] M3 — Transformer
 - [ ] M4 — Evaluation + Model Selection
 - [ ] M5 — FastAPI
