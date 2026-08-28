@@ -17,6 +17,10 @@ dependencies = [
     "uvicorn",
     "pydantic",
     "streamlit",
+    "seaborn>=0.13.2",
+    "nltk>=3.10.3",
+    "wordcloud>=1.9.6",
+    "tensorflow>=2.21.0",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +29,7 @@ dev = [
     "pytest-cov",
     "ruff",
     "httpx",
+    "ipykernel>=6.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -36,6 +41,11 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.6",
     "httpx>=0.27",
+    "scikit-learn>=1.4",
+    "matplotlib>=3.8",
+    "pandas>=2.2",
+    "torch>=2.2",
+    "nbformat>=5.9",
 ]
 
 [tool.pytest.ini_options]
