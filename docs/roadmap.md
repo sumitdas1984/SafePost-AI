@@ -7,15 +7,15 @@ This is the repository-level execution tracker. Detailed task status should be m
 **M1 — Product + Dataset**
 
 ### Definition of Done
-- [ ] Product scope confirmed
-- [ ] Dataset selected
-- [ ] Dataset license/source documented
-- [ ] Dataset downloaded
-- [ ] Dataset exploratory analysis completed
-- [ ] Label distribution understood
-- [ ] Train/validation/test strategy defined
-- [ ] Data preprocessing pipeline skeleton created
-- [ ] M1 notes captured in `docs/experiments/`
+- [x] Product scope confirmed
+- [x] Dataset selected
+- [ ] Dataset license/source documented (skipped — see issue #3, `not_planned`)
+- [x] Dataset downloaded
+- [x] Dataset exploratory analysis completed
+- [ ] Label distribution understood — covered informally in EDA, formal write-up tracked in #6
+- [ ] Train/validation/test strategy defined — tracked in #7
+- [ ] Data preprocessing pipeline skeleton created — tracked in #8
+- [x] M1 notes captured in `docs/experiments/`
 
 ## Milestones
 
