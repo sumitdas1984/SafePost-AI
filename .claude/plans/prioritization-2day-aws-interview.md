@@ -57,7 +57,7 @@ without an AWS account, Terraform can use LocalStack.
 | 2 | #17 Docker (API image) | 2–3 h | Medium | ECR-ready image. `uv sync --all-extras` inside the build. |
 | 3 | **#15 SageMaker** | 4–6 h | **Very high** | **All of SageMaker.** Inference containers, models, endpoint configs, real-time endpoints, local mode, batch transform, data capture. |
 | 4 | **#19 Terraform** | 3–4 h | **Very high** | **All of Terraform.** HCL, providers, resources, modules, variables/outputs, state, remote backend, lifecycle rules. |
-| 5 | #18 GitHub Actions CI/CD | 2–3 h | High | OIDC role assumption, ECR push, deploy job. Newer pattern than basic CI. |
+| 5 | #18 GitHub Actions CI/CD | 2–3 h | High | Static AWS keys + ECR push. (OIDC deferred — not needed for the learning scope.) |
 | 6 | #20 MLOps / monitoring | 1–2 h | High | CloudWatch custom metrics, model monitoring, basic drift detection. |
 | 7 | #16 Streamlit | 1 h | None | "Hello world" UI. Skip unless time. |
 
@@ -87,7 +87,9 @@ By the time the 2 days are done, the user will have hands-on exposure to:
 - Lifecycle rules (create_before_destroy, ignore_changes)
 
 **CI/CD + MLOps**
-- OIDC role assumption from GitHub Actions (no static AWS keys)
+- GitHub Actions with **static AWS keys** in repo secrets (simpler than OIDC
+  for a learning project; OIDC is the production best practice but adds setup
+  steps — defer until you need it).
 - ECR push workflow
 - CloudWatch custom metrics from a FastAPI endpoint
 - SageMaker Model Monitor basics
