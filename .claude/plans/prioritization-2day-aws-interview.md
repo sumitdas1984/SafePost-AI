@@ -11,15 +11,27 @@ limited or no hands-on experience with **SageMaker** and **Terraform**
 how they'll learn those services deeply enough to answer interview
 questions on them.
 
+**The user has a real AWS account.** This changes the calculus significantly
+vs. local-mode / LocalStack — they can deploy a real SageMaker endpoint,
+push to a real ECR, run real Terraform applies, and observe real CloudWatch
+metrics. The learning value per hour goes up because every artifact is real.
+
 Current model state:
 - **M2 (BiLSTM)** is done — val 0.89, test 0.89 on the `data/processed/`
   splits. See `docs/experiments/M2-bilstm-baseline.md`.
-- **M3 (Transformer, DistilBERT)** is in progress on CPU — slow.
+- **M3 (Transformer, DistilBERT)** is in progress. The 1-epoch finetune
+  produced a model with **better test accuracy than BiLSTM** but the
+  notebook outputs were lost (training cell ran, eval cells didn't get
+  committed with the metrics). The finetuned model + tokenizer are
+  saved to `models/m3-transformer/final/` — that artifact is preserved.
+  The notebook is being re-run end-to-end to repopulate the metrics.
 - **M4 (Evaluation + Model Selection)** is not started.
 
-Decision: cap M3, run a minimal M4 comparison, then pivot hard to the
-deployment milestones. **SageMaker and Terraform are the primary learning
-goals** — everything else is supporting infrastructure.
+Decision: cap M3 (already done), capture the re-run metrics, run a
+minimal M4 comparison, then pivot hard to the deployment milestones.
+**SageMaker and Terraform are the primary learning goals** — everything
+else is supporting infrastructure. With the AWS account, every
+deployment artifact is real and reusable in the interview.
 
 ## Recommended approach
 
@@ -48,17 +60,18 @@ the interview's unknowns are.
 
 ### Priority ordering for the deployment milestones
 
-Effort estimates assume local development; SageMaker "local mode" runs
-without an AWS account, Terraform can use LocalStack.
+Effort estimates assume **real AWS** — the user has an account and IAM
+permissions. **Set a billing alarm before starting** (see "Cost
+control" below) so a runaway endpoint or ECR repo doesn't surprise you.
 
 | Order | Issue | Effort | Learning value | What's new vs what you already know |
 |---|---|---|---|---|
 | 1 | #14 FastAPI | 1–2 h | Low | Probably familiar. Wrap BiLSTM in `/predict`; Pydantic request/response. |
-| 2 | #17 Docker (API image) | 2–3 h | Medium | ECR-ready image. `uv sync --all-extras` inside the build. |
-| 3 | **#15 SageMaker** | 4–6 h | **Very high** | **All of SageMaker.** Inference containers, models, endpoint configs, real-time endpoints, local mode, batch transform, data capture. |
-| 4 | **#19 Terraform** | 3–4 h | **Very high** | **All of Terraform.** HCL, providers, resources, modules, variables/outputs, state, remote backend, lifecycle rules. |
-| 5 | #18 GitHub Actions CI/CD | 2–3 h | High | Static AWS keys + ECR push. (OIDC deferred — not needed for the learning scope.) |
-| 6 | #20 MLOps / monitoring | 1–2 h | High | CloudWatch custom metrics, model monitoring, basic drift detection. |
+| 2 | #17 Docker (API image) | 2–3 h | Medium | ECR-ready image. `uv sync --all-extras` inside the build. Push to real ECR. |
+| 3 | **#15 SageMaker** | 4–6 h | **Very high** | **Real endpoint.** Inference containers, models, endpoint configs, real-time endpoints, **optionally** local mode for iteration, batch transform, data capture. |
+| 4 | **#19 Terraform** | 3–4 h | **Very high** | **Real apply.** HCL, AWS provider, resources, modules, variables/outputs, state, remote backend (S3 + DynamoDB), lifecycle rules. |
+| 5 | #18 GitHub Actions CI/CD | 2–3 h | High | Static AWS keys + ECR push + (optional) deploy-to-SageMaker job. |
+| 6 | #20 MLOps / monitoring | 1–2 h | High | CloudWatch custom metrics from FastAPI, model monitoring, basic drift detection. |
 | 7 | #16 Streamlit | 1 h | None | "Hello world" UI. Skip unless time. |
 
 **Total: ~15–23 hours** across 2 days. SageMaker + Terraform together
@@ -97,23 +110,47 @@ By the time the 2 days are done, the user will have hands-on exposure to:
 
 ## Trade-offs to flag
 
-1. **SageMaker local mode is the highest-leverage move.** `mode=LocalMode`
-   runs the inference container locally using Docker; you can demo the
-   full build-image → create-model → invoke-endpoint lifecycle on your
-   laptop with no AWS account. By the end of #15 you should be able to
-   answer "how does SageMaker serve a model end-to-end" with code.
-2. **Real AWS deployment burns money.** Use AWS Academy, free tier, or
-   company credits if available. Otherwise stay on local mode + LocalStack
-   for Terraform — both let you learn the concepts without spending.
-3. **Terraform scope creep is real.** Restrict #19 to S3 + ECR + ECS
+1. **Real AWS is now on the table.** SageMaker real-time endpoints, ECR
+   push, Terraform applies, CloudWatch custom metrics — every artifact
+   becomes real and demonstrable. Learning value per hour goes up.
+2. **Cost control.** Real endpoints cost money per hour. Before starting
+   any deployment work, set a **billing alarm** in the AWS console:
+   - CloudWatch → Alarms → Billing → Create alarm → set threshold at $20
+     (or whatever your comfort is) → SNS topic that emails you
+   - Tag every resource with `Project=SafePostAI` so you can find stragglers
+   - Tear down endpoints and stop notebooks when not in use; SageMaker
+     endpoints accrue cost while `InService`
+3. **Local mode is still useful for iteration.** Even with real AWS
+   available, SageMaker local mode lets you iterate on the inference
+   container without round-tripping to AWS. Use local mode for the
+   first end-to-end loop; deploy to real AWS once it works.
+4. **Terraform scope creep is real.** Restrict #19 to S3 + ECR + ECS
    Fargate. That's enough to learn the full Terraform workflow without
    burning the day on resource sprawl.
-4. **An underfit model is still a credible interview talking point.**
-   "Here's the model, here's where I'd run longer if I had GPU" beats
-   "I didn't finish" every time.
 5. **Time budget is the constraint.** SageMaker + Terraform are 7–10
    hours together. Don't let supporting infrastructure (FastAPI, Docker,
    Streamlit) eat into that. If #14 takes longer than 2 hours, ask why.
+
+## M3 rerun — saving the metrics this time
+
+The previous M3 run lost its eval outputs (only the training cell was
+captured; cells 22 / 24 / 26 / 28 had no outputs). The finetuned model
++ tokenizer are preserved in `models/m3-transformer/final/` — that
+artifact is safe.
+
+When the rerun finishes, capture the metrics durably:
+1. **Commit the notebook with all outputs** (`git add notebooks/02_experiment_transformer.ipynb`)
+   immediately after the eval cells finish — don't wait.
+2. **Update `docs/experiments/M3-transformer.md`** with the val/test
+   numbers, per-class report, and a "Comparison with BiLSTM" section.
+3. **Save the model metrics to a JSON file** for M4 to load:
+   `models/m3-transformer/metrics.json` — accuracy, macro precision,
+   recall, F1 for val and test, plus the per-class dict. Make this
+   commit a separate step so the notebook commit doesn't accidentally
+   regress if cells are re-run.
+4. **Write a "rerun discipline" note** in the M3 doc: "If you re-run
+   the notebook, save before re-running — outputs aren't reliably
+   preserved otherwise."
 
 ## Concrete next steps
 
@@ -139,5 +176,7 @@ By the time the 2 days are done, the user will have hands-on exposure to:
 - `docs/experiments/M3-transformer.md` — M3 wrap-up note.
 - `docs/experiments/M4-evaluation.md` — M4 wrap-up note.
 - `infrastructure/terraform/` — S3 + ECR + ECS modules (#19).
-- `.github/workflows/ci.yml` — OIDC + ECR push (#18).
+- `.github/workflows/ci.yml` — static AWS keys + ECR push (#18).
 - `app/streamlit/app.py` — minimal UI (#16, optional).
+- AWS: real SageMaker endpoint, ECR repo, ECS Fargate service, CloudWatch
+  metrics + billing alarm — all tagged `Project=SafePostAI`.
