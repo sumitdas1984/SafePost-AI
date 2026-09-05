@@ -21,9 +21,9 @@ This is the repository-level execution tracker. Detailed task status should be m
 
 - [x] M1 — Product + Dataset
 - [x] M2 — BiLSTM Baseline (TensorFlow) — replaces the original TF-IDF baseline
-- [ ] M3 — Transformer
-- [ ] M4 — Evaluation + Model Selection
-- [ ] M5 — FastAPI
+- [x] M3 — Transformer
+- [x] M4 — Evaluation + Model Selection
+- [x] M5 — FastAPI
 - [ ] M6 — SageMaker
 - [ ] M7 — Streamlit
 - [ ] M8 — Docker + AWS Application
