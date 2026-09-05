@@ -1,0 +1,61 @@
+{
+  "model": "distilbert-base-uncased",
+  "task": "hate-speech-classification",
+  "labels": ["hate_speech", "offensive_language", "neutral"],
+  "splits": {
+    "source": "ml/data/split.py",
+    "train_csv": "data/processed/train.csv",
+    "val_csv": "data/processed/val.csv",
+    "test_csv": "data/processed/test.csv"
+  },
+  "config": {
+    "num_epochs": 1,
+    "learning_rate": 2e-05,
+    "train_batch_size": 16,
+    "eval_batch_size": 32,
+    "max_length": 128,
+    "seed": 42,
+    "device": "cpu"
+  },
+  "validation": {
+    "eval_loss": 0.254524,
+    "eval_accuracy": 0.910974,
+    "eval_macro_precision": 0.76994,
+    "eval_macro_recall": 0.707453,
+    "eval_macro_f1": 0.725402
+  },
+  "test": {
+    "eval_loss": 0.250521,
+    "eval_accuracy": 0.919042,
+    "eval_macro_precision": 0.808151,
+    "eval_macro_recall": 0.725678,
+    "eval_macro_f1": 0.75096
+  },
+  "per_class_test": {
+    "hate_speech": {
+      "precision": 0.5963,
+      "recall": 0.3037,
+      "f1": 0.4025,
+      "support": 214
+    },
+    "offensive_language": {
+      "precision": 0.9368,
+      "recall": 0.9677,
+      "f1": 0.9520,
+      "support": 2879
+    },
+    "neutral": {
+      "precision": 0.8913,
+      "recall": 0.9056,
+      "f1": 0.8984,
+      "support": 625
+    }
+  },
+  "training_runtime_seconds": null,
+  "notes": [
+    "1 epoch cap per the 2-day prioritization plan; more epochs would likely lift macro F1 by 2-4 pp.",
+    "Macro F1 (0.7510) is below the PRD success criterion (>= 0.85); the deficit is entirely from hate_speech recall (0.3037).",
+    "Preprocessing differs from the BiLSTM notebook: DistilBERT feeds raw tweets into its tokenizer; the BiLSTM notebook lowercases, strips punctuation, removes stopwords, and lemmatizes.",
+    "Source notebook: notebooks/02_experiment_transformer.ipynb (cells 22, 24, 26)."
+  ]
+}
