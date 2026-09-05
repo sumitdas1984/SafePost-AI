@@ -31,7 +31,7 @@ success criteria) and lock in the dataset that downstream modeling
 ## Configuration
 
 - **EDA notebook:** `notebooks/01_eda.ipynb` (PyTorch exploration of the dataset).
-- **Baseline model notebook:** `notebooks/01_experiment_tf.ipynb` (TensorFlow BiLSTM — see `docs/experiments/M3-bilstm-tf.md` once that note is written).
+- **Baseline model notebook:** `notebooks/01_experiment_bilstm.ipynb` (TensorFlow BiLSTM — see `docs/experiments/M2-bilstm-baseline.md` for results).
 - **Fetch script:** `scripts/fetch_dataset.py`.
 - **Imbalance mitigation (informal, in the EDA notebook):** class 1 is subsampled to 3500 and class 0 repeated 3× to form a balanced training set. Not yet promoted to a reusable pipeline (issue #8).
 

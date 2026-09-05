@@ -37,7 +37,7 @@ for 3-class hate-speech classification, ahead of any Transformer comparison.
 
 ## Result
 
-Per-epoch log (visible in `notebooks/01_experiment_tf.ipynb`, cell 19):
+Per-epoch log (visible in `notebooks/01_experiment_bilstm.ipynb`, cell 19):
 
 | Epoch | Train Acc | Val Acc | Val Loss | LR |
 |---|---|---|---|---|
@@ -84,6 +84,6 @@ After switching to `data/processed/`:
 
 ## Artifacts
 
-- `notebooks/01_experiment_tf.ipynb` — full notebook (load → preprocess → tokenize → model → train → evaluate).
+- `notebooks/01_experiment_bilstm.ipynb` — full notebook (load → preprocess → tokenize → model → train → evaluate).
 - `ml/data/split.py` — splitter that produced the train/val/test CSVs.
 - `docs/experiments/M2-bilstm-baseline.md` — this note.
