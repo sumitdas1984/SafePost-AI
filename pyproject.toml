@@ -21,6 +21,11 @@ dependencies = [
     "nltk>=3.10.3",
     "wordcloud>=1.9.6",
     "tensorflow>=2.21.0",
+    "transformers>=5.16.1",
+    "datasets>=5.0.1",
+    "accelerate>=1.14.0",
+    "scikit-learn>=1.9.0",
+    "matplotlib>=3.11.1",
 ]
 
 [project.optional-dependencies]
