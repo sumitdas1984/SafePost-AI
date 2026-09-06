@@ -1,0 +1,52 @@
+# Build context for the two Dockerfiles in this directory.
+# This file lives at docker/.dockerignore but is consumed by
+# `docker build -f docker/api/Dockerfile ...` etc. when the build
+# context is the repo root.
+#
+# Keep build context lean and predictable: exclude venvs, notebook
+# outputs, secrets, and the bulk of `models/` — re-include only the
+# directory the API image needs (M3 fine-tuned weights + tokenizer).
+
+# Python / venv / caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Tooling / VCS
+.git/
+.gitignore
+.github/
+.claude/
+.vscode/
+.idea/
+
+# Project artifacts that don't belong in images
+data/
+notebooks/
+tests/
+docs/
+infrastructure/
+LICENSE
+Makefile
+# Note: do NOT exclude *.md — pyproject.toml points at README.md
+# and hatchling errors out if it's missing from the build context.
+
+# The trained model: exclude the bulk of `models/`, then
+# re-include exactly the M3 final directory for the API image.
+# The Streamlit image doesn't need any model; the api image
+# copies `./models` from the build context.
+models/
+!models/m3-transformer/
+!models/m3-transformer/final/
+!models/m3-transformer/final/**
+
+# Secrets / local config
+.env
+.env.*
+*.pem
+*.key
