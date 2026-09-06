@@ -1,24 +1,23 @@
-"""Hate-speech inference service.
+"""Hate-speech inference service backed by the BiLSTM model.
 
-Loads the DistilBERT model + tokenizer produced by M3 from
-``models/m3-transformer/final/`` and exposes a single ``predict``
-function that takes a raw tweet string and returns the moderation
-decision.
+Wraps :func:`app.inference.predict` with a thin ``ModelBundle`` that
+holds the artifact directory + the resolved ``model_version`` string for
+the ``/version`` endpoint. The actual model + tokenizer + NLTK corpora
+are loaded lazily by ``app.inference.predict`` (and cached there via
+``functools.lru_cache``), so this layer is essentially metadata.
 
-The bundle is loaded once via ``get_model()`` and cached for the
-process lifetime. Callers should fetch the bundle inside a FastAPI
-``lifespan`` handler so the model is ready before the first request
-and isn't re-loaded per call.
+Why BiLSTM and not the Transformer (M3)? The Transformer fine-tune hit
+higher validation accuracy, but the BiLSTM is what we ship:
 
-Label / action mapping
-----------------------
+- Smaller image (~350K params vs ~66M) → faster ECR push, faster ECS
+  task startup, cheaper Fargate compute (CPU-only, no GPU driver).
+- Lower inference latency on CPU (~10–50 ms vs ~200–800 ms).
+- Smaller operational surface (no TensorRT, no GPU AMI).
 
-The M3 fine-tune emits three labels (per the dataset's ``class``
-column):
-
-- ``0`` -> ``hate_speech``     -> ``block``
-- ``1`` -> ``offensive_language`` -> ``flag``
-- ``2`` -> ``neutral``         -> ``allow``
+Label / action mapping (per the PRD MVP contract):
+- ``0`` → ``hate_speech``       → ``block``
+- ``1`` → ``offensive_language`` → ``flag``
+- ``2`` → ``neutral``            → ``allow``
 """
 
 from __future__ import annotations
@@ -26,56 +25,40 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-import numpy as np
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from app.inference import DEFAULT_ARTIFACT_DIR, predict as _infer_predict
 
-DEFAULT_MODEL_DIR: Path = Path("models/m3-transformer/final")
-LABEL_NAMES: list[str] = ["hate_speech", "offensive_language", "neutral"]
-ACTION_MAP: dict[str, str] = {
-    "hate_speech": "block",
-    "offensive_language": "flag",
-    "neutral": "allow",
-}
-MAX_LENGTH: int = 128
+# Default artifact dir mirrors `app.inference.DEFAULT_ARTIFACT_DIR` so the
+# FastAPI side and the SageMaker side stay aligned. Override with
+# SAFEPOST_MODEL_DIR (read inside app.inference) or by passing
+# `model_dir=` to ModelBundle.
+DEFAULT_MODEL_DIR: Path = DEFAULT_ARTIFACT_DIR
 
 
 class ModelBundle:
-    """Loaded tokenizer + model + metadata for inference."""
+    """Wraps `app.inference.predict` with a model_version string for /version."""
 
     def __init__(self, model_dir: Path = DEFAULT_MODEL_DIR) -> None:
-        self.model_dir = model_dir
-        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_dir)
-        self.model.eval()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.to(self.device)
-        # Friendly version = parent directory name (e.g. "m3-transformer").
-        self.model_version = model_dir.parent.name
+        self.model_dir = Path(model_dir)
+        # Probe the artifact dir to resolve the version string at startup.
+        # _load_artifacts is private to app.inference but cheap to call
+        # once; its lru_cache keeps subsequent calls (predict, etc.)
+        # from re-loading the model.
+        from app.inference import _load_artifacts
+
+        _, _, meta = _load_artifacts(str(self.model_dir))
+        self.model_version = meta.get("model_version", "unknown")
 
     def predict(self, text: str) -> dict:
-        encoded = self.tokenizer(
-            text,
-            return_tensors="pt",
-            truncation=True,
-            padding=True,
-            max_length=MAX_LENGTH,
-        )
-        encoded = {key: value.to(self.device) for key, value in encoded.items()}
-        with torch.no_grad():
-            logits = self.model(**encoded).logits
-        probs = torch.softmax(logits, dim=-1)[0].cpu().numpy()
-        pred_id = int(np.argmax(probs))
-        label = LABEL_NAMES[pred_id]
-        return {
-            "label": label,
-            "confidence": float(probs[pred_id]),
-            "action": ACTION_MAP[label],
-            "model_version": self.model_version,
-        }
+        """Run inference and return the PRD-shaped response."""
+        return _infer_predict(text, artifact_dir=str(self.model_dir))
 
 
 @lru_cache
 def get_model() -> ModelBundle:
-    """Return the cached model bundle (loads on first call)."""
+    """Return the cached ModelBundle (constructed on first call).
+
+    The underlying Keras model + tokenizer + NLTK data are loaded by
+    ``app.inference._load_artifacts`` on the first ``predict`` call;
+    subsequent calls hit the same lru_cache and skip the load.
+    """
     return ModelBundle()

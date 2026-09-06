@@ -22,4 +22,4 @@ def test_version_includes_model(client):
     assert v.status_code == 200
     body = v.json()
     assert body["api_version"] == "0.1.0"
-    assert body["model_version"] == "m3-transformer"
+    assert body["model_version"] == "bilstm-v1"

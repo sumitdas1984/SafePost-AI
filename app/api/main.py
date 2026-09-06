@@ -1,11 +1,14 @@
 """SafePost AI FastAPI service.
 
-Loads the M3 DistilBERT model at startup via a lifespan handler and
+Loads the BiLSTM model bundle at startup via a lifespan handler and
 exposes three endpoints:
 
 - ``GET  /health``   liveness probe
 - ``GET  /version``  API + model version
 - ``POST /predict``  text -> {label, confidence, action, model_version}
+
+The BiLSTM is what we ship to production (see the rationale in
+``app/api/services/predict.py``).
 """
 
 from __future__ import annotations

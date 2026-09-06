@@ -27,7 +27,7 @@ def test_predict_response_shape(client):
     assert body["label"] in ALLOWED_LABELS
     assert body["action"] in ALLOWED_ACTIONS
     assert 0.0 <= body["confidence"] <= 1.0
-    assert body["model_version"] == "m3-transformer"
+    assert body["model_version"] == "bilstm-v1"
 
 
 def test_predict_rejects_empty_text(client):

@@ -40,7 +40,7 @@ DEFAULT_ARTIFACT_DIR = Path(os.environ.get("SAFEPOST_MODEL_DIR", "models/bilstm"
 ACTION_MAP: dict[str, str] = {
     "hate_speech": "block",
     "offensive_language": "flag",
-    "neither": "allow",
+    "neutral": "allow",
 }
 
 
